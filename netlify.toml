@@ -1,5 +1,5 @@
 [build]
-  publish = "aten_responde"
+  publish = "."
 [[redirects]]
   from = "/api/chat"
   to = "/.netlify/functions/chat"
