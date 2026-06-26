@@ -1,0 +1,42 @@
+[
+  {
+    "pregunta": "¿Cuántos días de licencia por enfermedad tengo?",
+    "respuesta": "Según el Estatuto Docente (Ley 1124), los docentes titulares tienen derecho a licencia por enfermedad con goce de haberes por un período que varía según la antigüedad. En general: hasta 3 meses continuos o discontinuos en el año, prorrogables. Para enfermedades graves o de largo tratamiento, el período puede extenderse. Consultá el artículo 105 y siguientes del Estatuto, y verificá tu antigüedad para el cálculo exacto.",
+    "temas": ["licencia", "enfermedad", "salud", "dias"]
+  },
+  {
+    "pregunta": "¿Cómo se cuenta el puntaje para los cursos de capacitación?",
+    "respuesta": "Los cursos de capacitación suman puntaje según su carga horaria y el organismo que los avala. En general: cursos avalados por el CPE (Consejo Provincial de Educación) o instituciones reconocidas suman entre 0.05 y 0.50 puntos según duración. Los cursos de 40 horas o más suelen otorgar mayor puntaje. La solicitud de reconocimiento se tramita ante la Junta de Calificación correspondiente, presentando título, programa y certificado.",
+    "temas": ["puntaje", "curso", "capacitacion", "formacion"]
+  },
+  {
+    "pregunta": "¿Qué diferencia hay entre titular, interino y suplente?",
+    "respuesta": "Titular: accedió al cargo por concurso, tiene estabilidad laboral plena. Interino: cubre un cargo vacante o con licencia, sin concurso, pero con cierta estabilidad temporal. Suplente: cubre ausencias transitorias, el contrato termina cuando regresa el titular o interino. Las licencias y derechos varían en cada categoría. El Estatuto Docente (Ley 1124) regula las condiciones de cada situación de revista.",
+    "temas": ["titular", "interino", "suplente", "situacion", "revista"]
+  },
+  {
+    "pregunta": "¿Tengo derecho a licencia por maternidad?",
+    "respuesta": "Sí. La licencia por maternidad es de 90 días corridos con goce de haberes, que pueden tomarse 45 días antes y 45 días después del parto, o acumularlos post-parto. Se extiende en casos de nacimiento prematuro o múltiple. El padre o co-progenitor tiene licencia de 5 días hábiles. Para adopción, también existen licencias específicas. Requerís presentar certificado médico y notificar con antelación.",
+    "temas": ["maternidad", "embarazo", "parto", "licencia maternidad", "adopcion"]
+  },
+  {
+    "pregunta": "¿Cómo funciona la Junta de Calificación?",
+    "respuesta": "La Junta de Calificación es el organismo que evalúa el puntaje de los docentes para acceder a cargos y ascensos. Hay Juntas de Primaria y de Secundaria. Anualmente se abre el período de inscripción para actualizar méritos (títulos, cursos, antigüedad). El orden de mérito resultante define quién accede a cargos vacantes o interinatos. ATEN tiene representación en estas juntas y puede asesorarte si considerás que tu puntaje es incorrecto.",
+    "temas": ["junta", "calificacion", "orden de merito", "puntaje", "concurso"]
+  },
+  {
+    "pregunta": "¿Puedo hacer huelga sin descuento de sueldo?",
+    "respuesta": "No. Conforme a la legislación vigente, los días de huelga o paro son descontados del salario, salvo acuerdo específico con el gobierno provincial. Sin embargo, el derecho a huelga está garantizado constitucionalmente. ATEN asesora sobre los procedimientos legales para ejercer este derecho y sobre las implicancias en cada medida de fuerza. Ante dudas, consultá a tu delegado/a o a la sede gremial.",
+    "temas": ["huelga", "paro", "descuento", "medida de fuerza", "salario"]
+  },
+  {
+    "pregunta": "¿Qué es la licencia gremial?",
+    "respuesta": "Es el derecho de los docentes que ocupan cargos en ATEN u otras organizaciones sindicales a ausentarse de sus funciones para cumplir tareas gremiales. Puede ser total (sin prestación de servicios) o parcial. Está regulada por el Estatuto Docente y los convenios colectivos. El cargo queda cubierto por un suplente durante la licencia gremial.",
+    "temas": ["licencia gremial", "sindical", "aten", "delegado", "gremio"]
+  },
+  {
+    "pregunta": "¿Cómo calculo mi antigüedad?",
+    "respuesta": "La antigüedad docente se cuenta desde la primera designación en el sistema educativo provincial, incluidos períodos como suplente, interino y titular. Los servicios en otras jurisdicciones pueden reconocerse mediante trámite específico. La antigüedad impacta en: el escalafón salarial, la duración de las licencias por enfermedad, y la estabilidad laboral. Podés verificar tu antigüedad en tu legajo o tramitar reconocimiento ante el CPE.",
+    "temas": ["antiguedad", "escalafon", "anos", "servicios"]
+  }
+]
