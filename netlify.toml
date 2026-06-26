@@ -1,5 +1,5 @@
 [build]
-  publish = "."
+  publish = "aten_responde""
 
 [[redirects]]
   from = "/api/chat"
