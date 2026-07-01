@@ -1,4 +1,7 @@
-// ATEN Responde — Cloudflare Pages Function v5 con proxy allorigins
+// ATEN Responde — Cloudflare Pages Function v6
+// Con búsqueda en aten.org.ar + LM Neuquén + Río Negro
+// Recuadro de autoridades + KB verificada
+
 const GROQ_MODELS = [
   'meta-llama/llama-4-maverick-17b-128e-instruct',
   'llama-3.3-70b-versatile',
@@ -10,6 +13,30 @@ const OPENROUTER_MODELS = [
   'qwen/qwen2.5-72b-instruct:free'
 ];
 
+// ── Comisión Directiva Provincial ATEN ──
+const AUTORIDADES_ATEN = {
+  titulo: 'Comisión Directiva Provincial ATEN — Gestión actual',
+  miembros: [
+    { cargo: 'Secretaria General',      nombre: 'Fanny Mansilla' },
+    { cargo: 'Secretaria Adjunta',      nombre: 'Cintia Galetto' },
+    { cargo: 'Secretaría Gremial',      nombre: 'Ángel Zalazar' },
+    { cargo: 'Secretaría de Prensa',    nombre: 'Marisabel Granda' },
+    { cargo: 'Secretaría de Finanzas',  nombre: 'Alberto Pérez' },
+    { cargo: 'Secretaría de Formación', nombre: 'Cristian Lermanda' },
+    { cargo: 'Secretaría de Primaria',  nombre: 'María Sudan' },
+    { cargo: 'Secretaría de Especial',  nombre: 'Nina Arévalo' },
+    { cargo: 'Secretaría de Inicial',   nombre: 'Carolina Knotek' },
+  ]
+};
+
+// Contexto de autoridades para el system prompt
+function buildAutoridadesCtx() {
+  const lista = AUTORIDADES_ATEN.miembros
+    .map(m => `- ${m.cargo}: ${m.nombre}`)
+    .join('\n');
+  return `COMISIÓN DIRECTIVA PROVINCIAL ATEN (datos oficiales verificados):\n${lista}`;
+}
+
 function limpiarRespuesta(texto) {
   return (texto || 'Sin respuesta.').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
 }
@@ -17,6 +44,8 @@ function limpiarRespuesta(texto) {
 function stripHTML(html) {
   return (html || '')
     .replace(/<!\[CDATA\[/g, '').replace(/\]\]>/g, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
@@ -28,7 +57,7 @@ function parseRSS(xml) {
   const items = [];
   const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
   let match;
-  while ((match = itemRegex.exec(xml)) !== null && items.length < 8) {
+  while ((match = itemRegex.exec(xml)) !== null && items.length < 6) {
     const block = match[1];
     const get = (tag) => {
       const m = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i').exec(block);
@@ -36,81 +65,102 @@ function parseRSS(xml) {
     };
     const title = get('title');
     const pubDate = get('pubDate');
-    const description = get('description').slice(0, 200);
+    const description = get('description').slice(0, 150);
     if (title) items.push({ title, pubDate, description });
   }
   return items;
 }
 
-async function obtenerNoticiasATEN() {
+// Determinar qué tipo de consulta es
+function clasificarConsulta(pregunta) {
+  const q = pregunta.toLowerCase();
+  const esAutoridades = /secretari|conductor|conduccion|comision|directiva|cargo|autoridad|quien es|quién es|dirige|dirigen|conduce|conducen|mansilla|galetto|zalazar|granda|perez|lermanda|sudan|arevalo|knotek/.test(q);
+  const esNoticias = /noticia|comunicado|paro|huelga|asamblea|acuerdo|salarial|aumento|marcha|moviliz|convocator|reciente|último|hoy|semana|medida.*fuerza|novedad|acontec|pasó|ocurrió|informa|últimas/.test(q);
+  const esLocal = /diario|neuquén|provincia|local|región|patagonia|rionegro|lmneuquen/.test(q);
+  return { esAutoridades, esNoticias, esLocal };
+}
+
+// Buscar en una URL via proxy allorigins o directo
+async function fetchContenido(url) {
+  // Intento directo primero
+  try {
+    const r = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ATENResponde/1.0)', 'Accept': 'application/json, application/rss+xml, text/xml, text/html, */*' },
+      signal: AbortSignal.timeout(5000)
+    });
+    if (r.ok) return await r.text();
+  } catch (_) {}
+
+  // Fallback: proxy allorigins
+  try {
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    const r = await fetch(proxyUrl, { signal: AbortSignal.timeout(7000) });
+    if (r.ok) {
+      const wrapper = await r.json();
+      return wrapper?.contents || null;
+    }
+  } catch (_) {}
+
+  return null;
+}
+
+// Buscar noticias en aten.org.ar
+async function buscarATEN() {
   const targets = [
-    'https://aten.org.ar/wp-json/wp/v2/posts?per_page=8&_fields=title,date,excerpt,link',
+    'https://aten.org.ar/wp-json/wp/v2/posts?per_page=6&_fields=title,date,excerpt,link',
     'https://aten.org.ar/feed/',
   ];
-
-  for (const target of targets) {
+  for (const url of targets) {
+    const content = await fetchContenido(url);
+    if (!content) continue;
     try {
-      // Intentar directo primero (Cloudflare tiene menos restricciones)
-      const rDirecto = await fetch(target, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ATENResponde/1.0)', 'Accept': 'application/json, text/xml, */*' },
-        signal: AbortSignal.timeout(6000)
-      });
-      let content = rDirecto.ok ? await rDirecto.text() : null;
-
-      // Si falla el directo, usar proxy
-      if (!content) {
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(target)}`;
-        const rProxy = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
-        if (rProxy.ok) {
-          const wrapper = await rProxy.json();
-          content = wrapper?.contents || null;
-        }
+      const posts = JSON.parse(content);
+      if (Array.isArray(posts) && posts.length) {
+        return 'NOTICIAS RECIENTES DE ATEN (aten.org.ar):\n' + posts.slice(0, 6).map(p => {
+          const t = stripHTML(p.title?.rendered || p.title || '');
+          const f = (p.date || '').slice(0, 10);
+          const r = stripHTML(p.excerpt?.rendered || '').slice(0, 120);
+          return `• ${t}${f ? ` (${f})` : ''}${r ? `\n  ${r}` : ''}`;
+        }).join('\n');
       }
-
-      if (!content) continue;
-
-      // Intentar JSON (API WordPress)
-      try {
-        const posts = JSON.parse(content);
-        if (Array.isArray(posts) && posts.length) {
-          let ctx = `NOTICIAS RECIENTES DE ATEN NEUQUÉN (fuente: aten.org.ar):\n`;
-          for (const post of posts.slice(0, 8)) {
-            const titulo = stripHTML(post.title?.rendered || post.title || '');
-            const fecha = (post.date || '').slice(0, 10);
-            const resumen = stripHTML(post.excerpt?.rendered || '').slice(0, 180);
-            if (titulo) {
-              ctx += `\n• ${titulo}`;
-              if (fecha) ctx += ` (${fecha})`;
-              if (resumen) ctx += `\n  ${resumen}`;
-            }
-          }
-          return ctx;
-        }
-      } catch (_) {}
-
-      // Intentar RSS
-      if (content.includes('<item>')) {
-        const items = parseRSS(content);
-        if (items.length) {
-          let ctx = `NOTICIAS RECIENTES DE ATEN NEUQUÉN (fuente: aten.org.ar):\n`;
-          for (const item of items) {
-            ctx += `\n• ${item.title}`;
-            if (item.pubDate) ctx += ` (${item.pubDate.slice(0, 16)})`;
-            if (item.description) ctx += `\n  ${item.description}`;
-          }
-          return ctx;
-        }
+    } catch (_) {}
+    if (content.includes('<item>')) {
+      const items = parseRSS(content);
+      if (items.length) {
+        return 'NOTICIAS RECIENTES DE ATEN (aten.org.ar):\n' + items.map(i =>
+          `• ${i.title}${i.pubDate ? ` (${i.pubDate.slice(0,16)})` : ''}${i.description ? `\n  ${i.description}` : ''}`
+        ).join('\n');
       }
-    } catch { continue; }
+    }
   }
   return '';
+}
+
+// Buscar en LM Neuquén
+async function buscarLMNeuquen(query) {
+  const url = `https://www.lmneuquen.com/?s=${encodeURIComponent(query)}`;
+  const content = await fetchContenido(url);
+  if (!content) return '';
+  const texto = stripHTML(content).slice(0, 1500);
+  if (texto.length < 100) return '';
+  return `RESULTADOS EN LM NEUQUÉN (lmneuquen.com) para "${query}":\n${texto.slice(0, 800)}`;
+}
+
+// Buscar en Río Negro
+async function buscarRioNegro(query) {
+  const url = `https://www.rionegro.com.ar/?s=${encodeURIComponent(query)}`;
+  const content = await fetchContenido(url);
+  if (!content) return '';
+  const texto = stripHTML(content).slice(0, 1500);
+  if (texto.length < 100) return '';
+  return `RESULTADOS EN DIARIO RÍO NEGRO (rionegro.com.ar) para "${query}":\n${texto.slice(0, 800)}`;
 }
 
 async function callGroq(k, model, messages) {
   const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${k}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model, messages, max_tokens: 1200, temperature: 0.4 })
+    body: JSON.stringify({ model, messages, max_tokens: 1400, temperature: 0.4 })
   });
   return { ok: r.ok, status: r.status, data: await r.json().catch(() => ({})) };
 }
@@ -120,9 +170,9 @@ async function callOR(k, model, messages) {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${k}`, 'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://aten-responde.pages.dev', 'X-Title': 'ATEN Responde'
+      'HTTP-Referer': 'https://chatgptep.pages.dev', 'X-Title': 'ATEN Responde'
     },
-    body: JSON.stringify({ model, messages, max_tokens: 1200, temperature: 0.4 })
+    body: JSON.stringify({ model, messages, max_tokens: 1400, temperature: 0.4 })
   });
   return { ok: r.ok, status: r.status, data: await r.json().catch(() => ({})) };
 }
@@ -135,8 +185,7 @@ async function getKB(ghToken, ghRepo) {
     });
     if (!r.ok) return [];
     const data = await r.json();
-    const content = atob(data.content.replace(/\n/g, ''));
-    return JSON.parse(content);
+    return JSON.parse(atob(data.content.replace(/\n/g, '')));
   } catch { return []; }
 }
 
@@ -171,10 +220,6 @@ function buscarEnKB(kb, pregunta) {
   return maxScore >= 2 ? mejor : null;
 }
 
-function esConsultaDeNoticias(pregunta) {
-  return /noticia|comunicado|paro|huelga|asamblea|acuerdo|salarial|aumento|marcha|moviliz|convocator|reciente|último|hoy|semana|medida.*fuerza|novedad|acontec|pasó|ocurrió|informa|últimas/.test(pregunta.toLowerCase());
-}
-
 const cors = {
   'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Allow-Methods': 'POST,OPTIONS'
@@ -205,28 +250,48 @@ export async function onRequestPost({ request, env }) {
     return new Response(JSON.stringify({ ok }), { status: ok ? 200 : 500, headers: cors });
   }
 
+  // Devolver también autoridades en getKB para que el panel las muestre
   if (body.action === 'getKB') {
     if (body.password !== adminPwd) return new Response(JSON.stringify({ error: 'Contraseña incorrecta' }), { status: 401, headers: cors });
     const kb = await getKB(ghToken, ghRepo);
-    return new Response(JSON.stringify({ kb }), { status: 200, headers: cors });
+    return new Response(JSON.stringify({ kb, autoridades: AUTORIDADES_ATEN }), { status: 200, headers: cors });
   }
 
   const { messages } = body;
   if (!messages?.length) return new Response(JSON.stringify({ error: 'Falta messages' }), { status: 400, headers: cors });
 
   const preguntaUsuario = messages.filter(m => m.role === 'user').slice(-1)[0]?.content || '';
+  const { esAutoridades, esNoticias } = clasificarConsulta(preguntaUsuario);
 
-  const [kb, noticiasATEN] = await Promise.all([
+  // Buscar en paralelo según el tipo de consulta
+  const [kb, noticiasATEN, noticiasLMN, noticiasRN] = await Promise.all([
     getKB(ghToken, ghRepo),
-    esConsultaDeNoticias(preguntaUsuario) ? obtenerNoticiasATEN() : Promise.resolve('')
+    esNoticias ? buscarATEN() : Promise.resolve(''),
+    (esNoticias || esAutoridades) ? buscarLMNeuquen(preguntaUsuario) : Promise.resolve(''),
+    (esNoticias || esAutoridades) ? buscarRioNegro(preguntaUsuario) : Promise.resolve(''),
   ]);
 
   const verificada = buscarEnKB(kb, preguntaUsuario);
   const sysIdx = messages.findIndex(m => m.role === 'system');
+
   if (sysIdx >= 0) {
     let extra = '';
-    if (verificada) extra += `\n\nRESPUESTA VERIFICADA POR ATEN (PRIORIDAD MÁXIMA):\nPregunta: "${verificada.pregunta}"\nRespuesta oficial: "${verificada.respuestaVerificada}"`;
-    if (noticiasATEN) extra += `\n\n${noticiasATEN}\n\nUsá estas noticias para responder. Citá aten.org.ar como fuente.`;
+
+    // Siempre inyectar autoridades en el sistema
+    extra += `\n\n${buildAutoridadesCtx()}`;
+
+    if (verificada)
+      extra += `\n\nRESPUESTA VERIFICADA POR ATEN (PRIORIDAD MÁXIMA):\nPregunta: "${verificada.pregunta}"\nRespuesta oficial: "${verificada.respuestaVerificada}"`;
+
+    if (noticiasATEN)
+      extra += `\n\n${noticiasATEN}`;
+
+    if (noticiasLMN)
+      extra += `\n\n${noticiasLMN}`;
+
+    if (noticiasRN)
+      extra += `\n\n${noticiasRN}`;
+
     if (extra) messages[sysIdx].content += extra;
   }
 
