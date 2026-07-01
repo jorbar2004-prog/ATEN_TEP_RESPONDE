@@ -25,9 +25,10 @@
   --text:#eceff4;--text-mid:#7aaed4;--text-muted:#3a5a80;
   --font:'Inter',system-ui,-apple-system,sans-serif;--hdr:56px;
 }
-html,body{height:100%;overflow:hidden;}
+html,body{height:100%;height:100dvh;overflow:hidden;}
 body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;display:flex;flex-direction:column;}
 .header{height:var(--hdr);flex-shrink:0;background:var(--red);display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 2px 12px rgba(0,0,0,.4);position:relative;z-index:10;}
+.test-badge{background:rgba(255,255,255,.92);color:var(--red);border-radius:20px;padding:3px 10px;font-size:10.5px;font-weight:800;letter-spacing:.03em;white-space:nowrap;flex-shrink:0;}
 .header-brand{display:flex;align-items:center;gap:10px;}
 .header-logo{width:36px;height:36px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:var(--red);flex-shrink:0;letter-spacing:-1px;}
 .header-title{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px;}
@@ -38,7 +39,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
 .hdr-btn.active{background:rgba(255,255,255,.3);}
 .app{display:flex;flex:1;overflow:hidden;min-height:0;}
 .sidebar{width:260px;min-width:260px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:transform .28s cubic-bezier(.4,0,.2,1);}
-.sb-section{padding:14px 14px 12px;border-bottom:1px solid var(--border);}
+.sb-section{padding:14px 14px 12px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sb-section.scrollable{flex:1;min-height:64px;overflow-y:auto;}
 .sb-label{font-size:10px;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:9px;}
 .quick-grid{display:flex;flex-direction:column;gap:5px;}
 .quick-btn{display:flex;align-items:center;gap:9px;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;cursor:pointer;color:var(--text-mid);font-size:12.5px;font-family:var(--font);text-align:left;transition:all .15s;}
@@ -52,8 +54,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
 .doc-rm{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:15px;line-height:1;padding:0 1px;}
 .doc-rm:hover{color:#e74c3c;}
 .proc-msg{font-size:11px;color:var(--gold);margin-top:5px;display:none;}
-.sb-info{padding:14px;font-size:12px;color:var(--text-muted);line-height:1.55;flex:1;overflow-y:auto;}
-.autoridades-box{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:12px;}
+.sb-info{padding:12px 14px;font-size:11.5px;color:var(--text-muted);line-height:1.5;flex-shrink:0;max-height:30%;overflow-y:auto;border-top:1px solid var(--border);}
+.autoridades-box{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;}
+.test-note{background:var(--gold-dim);border:1px solid rgba(243,156,18,.3);color:var(--gold);border-radius:8px;padding:6px 9px;font-size:10.5px;line-height:1.45;margin-bottom:10px;}
 .autoridades-title{font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:8px;}
 .autoridades-row{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;border-bottom:1px solid var(--border);gap:6px;}
 .autoridades-row:last-child{border-bottom:none;}
@@ -114,6 +117,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 18px;font-size:13px;z-index:400;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap;color:var(--text);}
 .toast.show{opacity:1;}
 .hamburger{display:none;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:7px;padding:6px 9px;color:#fff;cursor:pointer;font-size:16px;line-height:1;margin-right:4px;}
+@media(max-width:860px){.test-badge{display:none;}}
 .hamburger:hover{background:rgba(255,255,255,.25);}
 
 /* ── PANEL ADMIN ── */
@@ -167,6 +171,25 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
   #user-input{font-size:16px;}
   .bubble{max-width:92%;}
   .header-sub{display:none;}
+  .test-badge{display:none;}
+}
+
+/* Pantallas de poca altura (notebooks chicas, ventana no maximizada, zoom del navegador) */
+@media(max-height:760px){
+  :root{--hdr:48px;}
+  .sb-section{padding:9px 12px 8px;}
+  .quick-btn{padding:6px 9px;font-size:12px;}
+  .quick-grid{gap:4px;}
+  .welcome{padding:16px 20px;gap:8px;}
+  .welcome-title{font-size:18px;}
+  .messages{padding:14px 16px;gap:10px;}
+  .autoridades-row{padding:2px 0;}
+  .sb-info{max-height:26%;}
+}
+@media(max-height:600px){
+  :root{--hdr:44px;}
+  .welcome-starters{display:none;}
+  .sb-section{padding:7px 12px 6px;}
 }
 </style>
 </head>
@@ -222,6 +245,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
       <div class="header-title">ATEN Responde</div>
       <div class="header-sub">Asistente docente · Neuquén</div>
     </div>
+    <span class="test-badge">🧪 VERSIÓN DE PRUEBA</span>
   </div>
   <div class="header-actions">
     <button class="hdr-btn" id="tts-btn" onclick="toggleTTS()">🔇 Voz</button>
@@ -234,6 +258,20 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
   <aside class="sidebar" id="sidebar">
     <div class="sb-section">
+      <div class="autoridades-box">
+        <div class="autoridades-title">✊ Comisión Directiva Provincial</div>
+        <div class="autoridades-row"><span class="autoridades-cargo">Sec. General</span><span class="autoridades-nombre">Fanny Mansilla</span></div>
+        <div class="autoridades-row"><span class="autoridades-cargo">Sec. Adjunta</span><span class="autoridades-nombre">Cintia Galetto</span></div>
+        <div class="autoridades-row"><span class="autoridades-cargo">Gremial</span><span class="autoridades-nombre">Ángel Zalazar</span></div>
+        <div class="autoridades-row"><span class="autoridades-cargo">Prensa</span><span class="autoridades-nombre">Marisabel Granda</span></div>
+        <div class="autoridades-row"><span class="autoridades-cargo">Finanzas</span><span class="autoridades-nombre">Alberto Pérez</span></div>
+        <div class="autoridades-row"><span class="autoridades-cargo">Formación</span><span class="autoridades-nombre">Cristian Lermanda</span></div>
+        <div class="autoridades-row"><span class="autoridades-cargo">Primaria</span><span class="autoridades-nombre">María Sudan</span></div>
+        <div class="autoridades-row"><span class="autoridades-cargo">Especial</span><span class="autoridades-nombre">Nina Arévalo</span></div>
+        <div class="autoridades-row"><span class="autoridades-cargo">Inicial</span><span class="autoridades-nombre">Carolina Knotek</span></div>
+      </div>
+    </div>
+    <div class="sb-section scrollable">
       <div class="sb-label">Consultas frecuentes</div>
       <div class="quick-grid">
         <button class="quick-btn" onclick="quickAsk('¿Cuántos días de licencia por enfermedad me corresponden según el estatuto docente?')"><span class="quick-icon">💊</span>Licencias por enfermedad</button>
@@ -257,18 +295,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
       <div class="doc-list" id="doc-list"></div>
     </div>
     <div class="sb-info">
-      <div class="autoridades-box">
-        <div class="autoridades-title">✊ Comisión Directiva Provincial</div>
-        <div class="autoridades-row"><span class="autoridades-cargo">Sec. General</span><span class="autoridades-nombre">Fanny Mansilla</span></div>
-        <div class="autoridades-row"><span class="autoridades-cargo">Sec. Adjunta</span><span class="autoridades-nombre">Cintia Galetto</span></div>
-        <div class="autoridades-row"><span class="autoridades-cargo">Gremial</span><span class="autoridades-nombre">Ángel Zalazar</span></div>
-        <div class="autoridades-row"><span class="autoridades-cargo">Prensa</span><span class="autoridades-nombre">Marisabel Granda</span></div>
-        <div class="autoridades-row"><span class="autoridades-cargo">Finanzas</span><span class="autoridades-nombre">Alberto Pérez</span></div>
-        <div class="autoridades-row"><span class="autoridades-cargo">Formación</span><span class="autoridades-nombre">Cristian Lermanda</span></div>
-        <div class="autoridades-row"><span class="autoridades-cargo">Primaria</span><span class="autoridades-nombre">María Sudan</span></div>
-        <div class="autoridades-row"><span class="autoridades-cargo">Especial</span><span class="autoridades-nombre">Nina Arévalo</span></div>
-        <div class="autoridades-row"><span class="autoridades-cargo">Inicial</span><span class="autoridades-nombre">Carolina Knotek</span></div>
-      </div>
+      <div class="test-note">🧪 <strong>Versión de prueba.</strong> Las respuestas pueden contener errores — verificá siempre con tu delegado/a o la sede de ATEN.</div>
       <strong>ATEN Responde</strong> usa inteligencia artificial para orientarte sobre el Estatuto Docente (Ley 1124) y normativas de la provincia de Neuquén.<br><br>
       Para casos complejos o urgentes, consultá siempre a tu <strong>delegado/a gremial</strong> o a una sede de ATEN.<br><br>
       📍 Sede central: Rivadavia 68, Neuquén capital<br>
@@ -280,7 +307,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
   <main class="chat">
     <div class="messages" id="messages">
       <div class="welcome" id="welcome">
-        <div class="welcome-badge">✊ ATEN · Asociación de Trabajadores de la Educación del Neuquén</div>
+        <div class="welcome-badge">✊ ATEN · Asociación de Trabajadores de la Educación del Neuquén — 🧪 Versión de prueba</div>
         <div class="welcome-title">ATEN Responde</div>
         <div class="welcome-sub">Hacé tu consulta sobre el Estatuto Docente, licencias, puntaje, juntas, situación de revista, derechos gremiales y más.</div>
         <div class="welcome-starters">
