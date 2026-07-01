@@ -56,8 +56,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
 .proc-msg{font-size:11px;color:var(--gold);margin-top:5px;display:none;}
 .sb-info{padding:12px 14px;font-size:11.5px;color:var(--text-muted);line-height:1.5;flex-shrink:0;max-height:30%;overflow-y:auto;border-top:1px solid var(--border);}
 .autoridades-box{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;}
+.autoridades-trigger{display:flex;align-items:center;justify-content:space-between;width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;color:var(--text-mid);font-size:12px;font-weight:600;font-family:var(--font);cursor:pointer;transition:all .15s;}
+.autoridades-trigger:hover{border-color:var(--gold);color:var(--text);background:var(--gold-dim);}
+.autoridades-trigger-arrow{color:var(--text-muted);font-size:15px;}
 .test-note{background:var(--gold-dim);border:1px solid rgba(243,156,18,.3);color:var(--gold);border-radius:8px;padding:6px 9px;font-size:10.5px;line-height:1.45;margin-bottom:10px;}
-.autoridades-title{font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:8px;}
 .autoridades-row{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;border-bottom:1px solid var(--border);gap:6px;}
 .autoridades-row:last-child{border-bottom:none;}
 .autoridades-cargo{font-size:10px;color:var(--text-muted);flex-shrink:0;}
@@ -236,6 +238,29 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
   </div>
 </div>
 
+<!-- Modal Autoridades -->
+<div class="admin-modal" id="autoridades-modal">
+  <div class="admin-box" style="width:min(420px,94vw);">
+    <div class="admin-hdr">
+      <h2>🏛️ Comisión Directiva Provincial</h2>
+      <button class="admin-close" onclick="closeAutoridades()">✕</button>
+    </div>
+    <div style="padding:16px;">
+      <div class="autoridades-box" style="margin:0;">
+        <div class="autoridades-row"><span class="autoridades-cargo">Sec. General</span><span class="autoridades-nombre">Fanny Mansilla</span></div>
+        <div class="autoridades-row"><span class="autoridades-cargo">Sec. Adjunta</span><span class="autoridades-nombre">Cintia Galetto</span></div>
+        <div class="autoridades-row"><span class="autoridades-cargo">Gremial</span><span class="autoridades-nombre">Ángel Zalazar</span></div>
+        <div class="autoridades-row"><span class="autoridades-cargo">Prensa</span><span class="autoridades-nombre">Marisabel Granda</span></div>
+        <div class="autoridades-row"><span class="autoridades-cargo">Finanzas</span><span class="autoridades-nombre">Alberto Pérez</span></div>
+        <div class="autoridades-row"><span class="autoridades-cargo">Formación</span><span class="autoridades-nombre">Cristian Lermanda</span></div>
+        <div class="autoridades-row"><span class="autoridades-cargo">Primaria</span><span class="autoridades-nombre">María Sudan</span></div>
+        <div class="autoridades-row"><span class="autoridades-cargo">Especial</span><span class="autoridades-nombre">Nina Arévalo</span></div>
+        <div class="autoridades-row"><span class="autoridades-cargo">Inicial</span><span class="autoridades-nombre">Carolina Knotek</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Header -->
 <header class="header">
   <div class="header-brand">
@@ -257,19 +282,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
 <div class="app">
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
   <aside class="sidebar" id="sidebar">
-    <div class="sb-section">
-      <div class="autoridades-box">
-        <div class="autoridades-title">✊ Comisión Directiva Provincial</div>
-        <div class="autoridades-row"><span class="autoridades-cargo">Sec. General</span><span class="autoridades-nombre">Fanny Mansilla</span></div>
-        <div class="autoridades-row"><span class="autoridades-cargo">Sec. Adjunta</span><span class="autoridades-nombre">Cintia Galetto</span></div>
-        <div class="autoridades-row"><span class="autoridades-cargo">Gremial</span><span class="autoridades-nombre">Ángel Zalazar</span></div>
-        <div class="autoridades-row"><span class="autoridades-cargo">Prensa</span><span class="autoridades-nombre">Marisabel Granda</span></div>
-        <div class="autoridades-row"><span class="autoridades-cargo">Finanzas</span><span class="autoridades-nombre">Alberto Pérez</span></div>
-        <div class="autoridades-row"><span class="autoridades-cargo">Formación</span><span class="autoridades-nombre">Cristian Lermanda</span></div>
-        <div class="autoridades-row"><span class="autoridades-cargo">Primaria</span><span class="autoridades-nombre">María Sudan</span></div>
-        <div class="autoridades-row"><span class="autoridades-cargo">Especial</span><span class="autoridades-nombre">Nina Arévalo</span></div>
-        <div class="autoridades-row"><span class="autoridades-cargo">Inicial</span><span class="autoridades-nombre">Carolina Knotek</span></div>
-      </div>
+    <div class="sb-section" style="padding-bottom:10px;">
+      <button class="autoridades-trigger" onclick="openAutoridades()">
+        <span>🏛️ Comisión Directiva Provincial</span>
+        <span class="autoridades-trigger-arrow">›</span>
+      </button>
     </div>
     <div class="sb-section scrollable">
       <div class="sb-label">Consultas frecuentes</div>
@@ -549,6 +566,10 @@ function speakText(text){if(!ttsOn||!window.speechSynthesis)return;window.speech
 function toggleSidebar(){const s=document.getElementById('sidebar');s.classList.contains('open')?closeSidebar():openSidebar();}
 function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebar-overlay').classList.add('open');document.body.style.overflow='hidden';}
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('open');document.body.style.overflow='';}
+
+// ── Modal Autoridades ──
+function openAutoridades(){document.getElementById('autoridades-modal').classList.add('open');}
+function closeAutoridades(){document.getElementById('autoridades-modal').classList.remove('open');}
 
 // ── UI helpers ──
 function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
