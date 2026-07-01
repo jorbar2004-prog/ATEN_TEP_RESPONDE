@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aten-responde-v2';
+const CACHE_NAME = 'aten-responde-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
